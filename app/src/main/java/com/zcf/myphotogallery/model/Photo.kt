@@ -7,5 +7,7 @@ import io.objectbox.annotation.Id
 @Entity
 data class Photo(
     @Id var id: Long = 0,
-    val name: String
+    var name: String,
+    val imgUrl: String,
+    val timestamp: Long
 )
