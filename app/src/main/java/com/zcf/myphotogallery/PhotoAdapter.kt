@@ -23,10 +23,14 @@ class PhotoAdapter(val photoList: List<Photo>, val onNameChanged: (String, Photo
                     true -> {
                         tvPhotoName.inputType = InputType.TYPE_CLASS_TEXT
                         imgEdit.setImageResource(R.drawable.ic_action_done)
+                        tvPhotoName.requestFocus()
+                        showSoftKeyboard(tvPhotoName.context, tvPhotoName)
                     }
                     false -> {
                         tvPhotoName.inputType = InputType.TYPE_NULL
                         imgEdit.setImageResource(R.drawable.ic_action_edit)
+                        tvPhotoName.clearFocus()
+                        hideSoftKeyboard(tvPhotoName.context, tvPhotoName)
                     }
                 }
             }
