@@ -29,7 +29,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class GalleryActivity : AppCompatActivity() {
 
     val REQUEST_IMAGE_CAPTURE = 1000
 
