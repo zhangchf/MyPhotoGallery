@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.zcf.myphotogallery.model.Photo
 
 
-class PhotoAdapter(val photoList: List<Photo>, val onNameChanged: (String, Photo) -> Unit) : RecyclerView.Adapter<PhotoAdapter.PhotoVH>() {
+class PhotoAdapter(val photoList: List<Photo>, val onNameChanged: (Photo, String) -> Unit) : RecyclerView.Adapter<PhotoAdapter.PhotoVH>() {
 
     class PhotoVH(val photoView: View) : RecyclerView.ViewHolder(photoView) {
         val imgPhoto: ImageView = photoView.findViewById(R.id.imgPhoto)
@@ -55,7 +55,7 @@ class PhotoAdapter(val photoList: List<Photo>, val onNameChanged: (String, Photo
         holder.imgEdit.setOnClickListener {
             holder.editMode = !holder.editMode
             if (!holder.editMode) {
-                onNameChanged(holder.tvPhotoName.text.toString(), photo)
+                onNameChanged(photo, holder.tvPhotoName.text.toString())
             }
         }
     }

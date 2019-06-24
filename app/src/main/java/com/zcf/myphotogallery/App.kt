@@ -4,29 +4,27 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.zcf.myphotogallery.model.MyObjectBox
+import dagger.Component
+import dagger.Module
 import io.objectbox.BoxStore
 import io.objectbox.android.AndroidObjectBrowser
-
-
-object MyBoxStore {
-    lateinit var boxStore: BoxStore
-        private set
-
-    fun init(context: Context) {
-        boxStore = MyObjectBox.builder().androidContext(context).build()
-        if (BuildConfig.DEBUG) {
-            val started = AndroidObjectBrowser(boxStore).start(context)
-            Log.i("ObjectBrowser", "Started: " + started)
-        }
-    }
-}
-
+import javax.inject.Singleton
 
 class App : Application() {
+    lateinit var singletonComponent: SingletonComponent
+        private set
 
     override fun onCreate() {
         super.onCreate()
-        MyBoxStore.init(applicationContext)
+        instance = this
+        singletonComponent = DaggerSingletonComponent.builder().contextModule(ContextModule(this)).build()
+    }
+
+    companion object {
+        private var instance: App? = null
+
+        @JvmStatic
+        fun get(): App = instance!!
     }
 
 }

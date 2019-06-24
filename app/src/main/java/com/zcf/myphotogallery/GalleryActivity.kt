@@ -13,16 +13,21 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.zcf.myphotogallery.model.Photo
+import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 class GalleryActivity : AppCompatActivity() {
 
     private val REQUEST_IMAGE_CAPTURE = 1000
+
+    @Inject
+    lateinit var boxStore: BoxStore
 
     private lateinit var currentPhotoName: String
     private lateinit var currentPhotoPath: String
@@ -30,17 +35,16 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var galleryViewModel: GalleryViewModel
 
     private var photoList: MutableList<Photo> = mutableListOf()
-    private var photoAdapter: PhotoAdapter = PhotoAdapter(photoList) { name, photo ->
-        if (!name.equals(photo.name)) {
-            photo.name = name
-            MyBoxStore.boxStore.boxFor<Photo>().put(photo)
-        }
+    private var photoAdapter: PhotoAdapter = PhotoAdapter(photoList) { photo, newName ->
+        galleryViewModel.updatePhotoName(photo, newName)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        App.get().singletonComponent.inject(this)
 
         fab.setOnClickListener { view ->
             dispatchTakePictureIntent()
@@ -49,7 +53,7 @@ class GalleryActivity : AppCompatActivity() {
         recyclerPhoto.layoutManager = StaggeredGridLayoutManager(2, RecyclerView.VERTICAL)
         recyclerPhoto.adapter = photoAdapter
 
-        galleryViewModel = ViewModelProviders.of(this).get(GalleryViewModel::class.java)
+        galleryViewModel = ViewModelProviders.of(this, GalleryViewModelFactory(boxStore)).get(GalleryViewModel::class.java)
         galleryViewModel.getPhotos().observe(this, Observer<List<Photo>> {
             photoList.clear()
             photoList.addAll(it)
@@ -89,7 +93,7 @@ class GalleryActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            MyBoxStore.boxStore.boxFor<Photo>()
+            boxStore.boxFor<Photo>()
                 .put(Photo(name = currentPhotoName, imgUrl = currentPhotoPath, timestamp = System.currentTimeMillis()))
 
             imgPreview.setImagePath(currentPhotoPath)
