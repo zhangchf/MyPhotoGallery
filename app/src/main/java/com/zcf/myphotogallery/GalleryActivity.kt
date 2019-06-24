@@ -6,37 +6,28 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.text.InputType
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.zcf.myphotogallery.model.Photo
-import com.zcf.myphotogallery.model.Photo_
-import io.objectbox.android.AndroidScheduler
 import io.objectbox.kotlin.boxFor
-import io.objectbox.query.QueryBuilder
-import io.objectbox.reactive.DataSubscriptionList
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.item_photo.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
 class GalleryActivity : AppCompatActivity() {
 
-    val REQUEST_IMAGE_CAPTURE = 1000
-
-    val subscriptions = DataSubscriptionList()
+    private val REQUEST_IMAGE_CAPTURE = 1000
 
     private lateinit var currentPhotoName: String
     private lateinit var currentPhotoPath: String
+
+    private lateinit var galleryViewModel: GalleryViewModel
 
     private var photoList: MutableList<Photo> = mutableListOf()
     private var photoAdapter: PhotoAdapter = PhotoAdapter(photoList) { name, photo ->
@@ -58,12 +49,12 @@ class GalleryActivity : AppCompatActivity() {
         recyclerPhoto.layoutManager = StaggeredGridLayoutManager(2, RecyclerView.VERTICAL)
         recyclerPhoto.adapter = photoAdapter
 
-        val photoQuery = MyBoxStore.boxStore.boxFor<Photo>().query().order(Photo_.timestamp, QueryBuilder.DESCENDING).build()
-        photoQuery.subscribe(subscriptions).on(AndroidScheduler.mainThread()).observer {
+        galleryViewModel = ViewModelProviders.of(this).get(GalleryViewModel::class.java)
+        galleryViewModel.getPhotos().observe(this, Observer<List<Photo>> {
             photoList.clear()
             photoList.addAll(it)
             photoAdapter.notifyDataSetChanged()
-        }
+        })
     }
 
 
